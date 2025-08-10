@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
-  const { cartItems = [] } = useCart() || {}; // ✅ default to empty array
+  const { items = [] } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -23,10 +23,10 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-white shadow sticky top-0 z-50">
+    <header className="bg-green-300 shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          
+
           {/* Left side - Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
@@ -47,12 +47,22 @@ export default function Header() {
           <div className="flex items-center gap-4">
             {/* Cart */}
             <Link href="/cart" className="relative">
-              <svg className="w-6 h-6 text-gray-700 hover:text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 6.72A1 1 0 007 21h10a1 1 0 001-.78L20 13M7 13l-4-8" />
+              <svg
+                className="w-6 h-6 text-gray-700 hover:text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 6.72A1 1 0 007 21h10a1 1 0 001-.78L20 13M7 13l-4-8"
+                />
               </svg>
-              {cartItems.length > 0 && (
+              {items.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItems.length}
+                  {items.length}
                 </span>
               )}
             </Link>
@@ -65,24 +75,49 @@ export default function Header() {
                   className="flex items-center gap-2"
                 >
                   <Image
-                    src={user?.avatar || "/default-avatar.png"} // ✅ safe access
+                    src={user?.avatar || "/default-avatar.png"}
                     alt="User Avatar"
                     width={32}
                     height={32}
                     className="rounded-full border"
                   />
                   <span className="hidden sm:block font-medium">
-                    {user?.username || user?.name || "User"} {/* ✅ fallback */}
+                    {user?.username || user?.name || "User"}
                   </span>
                 </button>
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2">
-                    <Link href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                      Profile
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
+                    {/* Order Management */}
+                    <Link
+                      href="/orders"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      My Orders
                     </Link>
-                    <Link href="/orders" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                      Orders
+
+                    {/* Product Management */}
+                    <Link
+                      href="/add-product"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Add Products
                     </Link>
+                    <Link
+                      href="/catalogs"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      My Catalogs
+                    </Link>
+
+                    {/* Account Settings */}
+                    <Link
+                      href="/update-profile"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Update Profile
+                    </Link>
+
+                    {/* Logout */}
                     <button
                       onClick={logout}
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
@@ -106,7 +141,13 @@ export default function Header() {
               className="md:hidden p-2 rounded hover:bg-gray-100"
               onClick={() => setMenuOpen((prev) => !prev)}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>

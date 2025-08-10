@@ -1,21 +1,18 @@
 // components/common/AddToCartButton.tsx
-import React from "react";
-import API from "../../utils/api";
-import { useCart } from "../cart/CartContext";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/store/slices/cartSlice";
+import { Product } from "@/types/Product";
+import { AppDispatch } from "@/store";
 
-export default function AddToCartButton({ product, qty = 1 }: { product: any; qty?: number }) {
-  const { reload } = useCart();
+export default function AddToCartButton({ product }: { product: Product }) {
+  const dispatch = useDispatch<AppDispatch>();
 
-  const add = async () => {
-    try {
-      await API.post("/cart/add/", { product_id: product.id, quantity: qty });
-      reload();
-      alert("Added to cart");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to add");
-    }
-  };
-
-  return <button onClick={add}>Add to cart</button>;
+  return (
+    <button
+      onClick={() => dispatch(addToCart(product))}
+      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+    >
+      Add to Cart
+    </button>
+  );
 }

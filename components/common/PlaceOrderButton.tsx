@@ -1,24 +1,19 @@
 // components/common/PlaceOrderButton.tsx
-import React from "react";
-import API from "../../utils/api";
-import { useRouter } from "next/router";
-import { useCart } from "../cart/CartContext";
+interface Props {
+  onClick: () => void;
+  disabled?: boolean;
+}
 
-export default function PlaceOrderButton() {
-  const r = useRouter();
-  const { items, reload } = useCart();
-
-  const place = async () => {
-    if (items.length === 0) return alert("Cart empty");
-    try {
-      const res = await API.post("/orders/", { items });
-      reload();
-      r.push(`/orders/${res.data.id}`);
-    } catch (err) {
-      console.error(err);
-      alert("Order failed");
-    }
-  };
-
-  return <button onClick={place}>Place Order</button>;
+export default function PlaceOrderButton({ onClick, disabled }: Props) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition ${
+        disabled ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+    >
+      Place Order
+    </button>
+  );
 }

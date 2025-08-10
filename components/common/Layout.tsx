@@ -1,16 +1,14 @@
 // components/common/Layout.tsx
-import React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
+import { ReactNode } from "react";
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main>{children}</main>
+      <main className="flex-grow container mx-auto px-4 py-6">{children}</main>
       <Footer />
-    </>
+    </div>
   );
-};
-
-export default Layout;
+}

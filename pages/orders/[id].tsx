@@ -1,23 +1,47 @@
-// pages/orders/[id].tsx
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
-import API from "../../utils/api";
+import { useEffect, useState } from "react";
 
 export default function OrderDetails() {
-  const r = useRouter();
-  const { id } = r.query;
+  const router = useRouter();
+  const { id } = router.query;
   const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
-    API.get(`/orders/${id}/`).then((res) => setOrder(res.data)).catch(() => {});
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(`https://felikz97.pythonanywhere.com/api/orders/${id}/`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to fetch order");
+        const data = await res.json();
+        setOrder(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrder();
   }, [id]);
 
-  if (!order) return <p>Loading...</p>;
+  if (loading) return <p>Loading order details...</p>;
+  if (!order) return <p>Order not found.</p>;
+
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Order {order.id}</h1>
-      <pre>{JSON.stringify(order, null, 2)}</pre>
+    <div style={{ padding: "20px" }}>
+      <h1>Order #{order.id}</h1>
+      <p>Status: {order.status}</p>
+      <p>Total Price: ${order.total_price}</p>
+      <h3>Items:</h3>
+      <ul>
+        {order.items?.map((item: any) => (
+          <li key={item.id}>
+            {item.product_name} - Qty: {item.quantity} - ${item.price}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

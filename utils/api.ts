@@ -1,11 +1,7 @@
-// utils/api.ts
-import axiosInstance from "./axiosInstance";
+import axios from "axios";
 
-const API = {
-  get: (url: string, params?: any) => axiosInstance.get(url, { params }),
-  post: (url: string, data?: any) => axiosInstance.post(url, data),
-  put: (url: string, data?: any) => axiosInstance.put(url, data),
-  delete: (url: string) => axiosInstance.delete(url),
-};
+const API = axios.create({
+  baseURL: "https://felikz97.pythonanywhere.com",
+});
 
 export default API;

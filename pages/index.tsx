@@ -1,32 +1,18 @@
 // pages/index.tsx
-import Link from "next/link";
-import React from "react";
+import Layout from "@/components/common/Layout";
+import ProductGridWithSidebar from "@/components/ProductGridWithSidebar";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <main>
-      {/* Hero Section */}
-      <section className="py-16 text-center bg-green-300">
-        <h1 className="text-4xl font-bold text-gray-900">Welcome to ShopX</h1>
-        <p className="mt-4 text-lg text-black-600">
-          Fast, simple ecommerce built for speed — finish your project faster!
-        </p>
-        <div className="mt-6">
-          <Link href="/products">
-            <button className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-              Browse Products
-            </button>
-          </Link>
+    <Layout>
+      <div className="space-y-6">
+        <div className="bg-green-100 text-gray-800 px-6 py-12 rounded-lg shadow">
+          <h1 className="text-3xl sm:text-4xl font-bold">Welcome to NexusStore</h1>
+          <p className="mt-2 text-gray-700">Your one-stop shop for electronics, fashion, and accessories.</p>
         </div>
-      </section>
 
-      {/* Featured Section */}
-      <section className="p-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Featured</h2>
-        <p className="mt-2 text-gray-600">
-          Placeholder for featured products / categories
-        </p>
-      </section>
-    </main>
+        <ProductGridWithSidebar />
+      </div>
+    </Layout>
   );
 }
