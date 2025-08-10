@@ -1,6 +1,6 @@
 // store/slices/cartSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Product } from "./productSlice";
+import { Product } from "@/types/Product"; // ✅ Import from a proper types file
 
 interface CartItem extends Product {
   quantity: number;

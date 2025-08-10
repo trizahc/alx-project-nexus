@@ -1,4 +1,4 @@
-import { Product } from "@/store/productSlice";
+import { Product } from "@/types/Product";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/store/cartSlice";
 import Image from "next/image";
@@ -44,19 +44,23 @@ export default function ProductCard({ product }: { product: Product }) {
         </p>
 
         {/* Optional Attributes */}
-        {product.colors?.length > 0 && (
+        {product.colors?.length ? (
           <p className="text-xs text-gray-600 mt-1">
             Colors: {product.colors.join(", ")}
           </p>
-        )}
-        {product.sizes?.length > 0 && (
-          <p className="text-xs text-gray-600">Sizes: {product.sizes.join(", ")}</p>
-        )}
-        {product.shoe_sizes?.length > 0 && (
+        ) : null}
+
+        {product.sizes?.length ? (
+          <p className="text-xs text-gray-600">
+            Sizes: {product.sizes.join(", ")}
+          </p>
+        ) : null}
+
+        {product.shoe_sizes?.length ? (
           <p className="text-xs text-gray-600">
             Shoe Sizes: {product.shoe_sizes.join(", ")}
           </p>
-        )}
+        ) : null}
 
         {/* Action Buttons */}
         <div className="mt-auto flex gap-2">
