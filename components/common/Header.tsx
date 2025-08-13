@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import useAuth from "@/hooks/userAuth";
+import { useAuth } from "@/hooks/userAuthContext"; // ✅ Corrected import
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartContext";
 import Image from "next/image";
 
 export default function Header() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, loading } = useAuth(); // ✅ Context-based auth
   const { items = [] } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -22,11 +22,13 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Avoid rendering wrong state before auth loads
+  if (loading) return null;
+
   return (
     <header className="bg-green-300 shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-
           {/* Left side - Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
@@ -43,7 +45,7 @@ export default function Header() {
             <Link href="/contact" className="text-gray-700 hover:text-blue-600">Contact</Link>
           </nav>
 
-          {/* Right side - Cart + Profile */}
+          {/* Right side - Cart + Profile/Auth */}
           <div className="flex items-center gap-4">
             {/* Cart */}
             <Link href="/cart" className="relative">
@@ -67,8 +69,23 @@ export default function Header() {
               )}
             </Link>
 
-            {/* Profile / Auth */}
-            {isAuthenticated ? (
+            {/* Auth Section */}
+            {!isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Register
+                </Link>
+              </div>
+            ) : (
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setProfileOpen((prev) => !prev)}
@@ -87,37 +104,21 @@ export default function Header() {
                 </button>
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
-                    {/* Order Management */}
-                    <Link
-                      href="/orders"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
+                    <Link href="/account" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                      My Account
+                    </Link>
+                    <Link href="/orders" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                       My Orders
                     </Link>
-
-                    {/* Product Management */}
-                    <Link
-                      href="/add-product"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
+                    <Link href="/add-product" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                       Add Products
                     </Link>
-                    <Link
-                      href="/catalogs"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
+                    <Link href="/catalogs" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                       My Catalogs
                     </Link>
-
-                    {/* Account Settings */}
-                    <Link
-                      href="/update-profile"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
+                    <Link href="/update-profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                       Update Profile
                     </Link>
-
-                    {/* Logout */}
                     <button
                       onClick={logout}
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
@@ -127,13 +128,6 @@ export default function Header() {
                   </div>
                 )}
               </div>
-            ) : (
-              <Link
-                href="/login"
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Login
-              </Link>
             )}
 
             {/* Mobile menu button */}
@@ -161,6 +155,26 @@ export default function Header() {
             <Link href="/shop" className="block text-gray-700 hover:text-blue-600">Shop</Link>
             <Link href="/about" className="block text-gray-700 hover:text-blue-600">About</Link>
             <Link href="/contact" className="block text-gray-700 hover:text-blue-600">Contact</Link>
+            {!isAuthenticated ? (
+              <>
+                <Link href="/login" className="block text-blue-600">Login</Link>
+                <Link href="/register" className="block text-green-600">Register</Link>
+              </>
+            ) : (
+              <>
+                <Link href="/account" className="block text-gray-700">My Account</Link>
+                <Link href="/orders" className="block text-gray-700">My Orders</Link>
+                <Link href="/add-product" className="block text-gray-700">Add Products</Link>
+                <Link href="/catalogs" className="block text-gray-700">My Catalogs</Link>
+                <Link href="/update-profile" className="block text-gray-700">Update Profile</Link>
+                <button
+                  onClick={logout}
+                  className="block text-red-600 w-full text-left"
+                >
+                  Logout
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

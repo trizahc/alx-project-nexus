@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { useAuth } from "@/hooks/userAuthContext"; // ✅ Correct import
 
 export default function Login() {
+  const { login } = useAuth(); // ✅ Correct hook call from context
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -33,23 +35,21 @@ export default function Login() {
       const token = res.data.token || res.data.access;
       const user = res.data.user;
 
-      if (token) {
-        localStorage.setItem("token", token);
-        if (user) {
-          localStorage.setItem("user", JSON.stringify(user));
-        }
+      if (token && user) {
+        login(user, token); // ✅ Saves to context + localStorage
         router.push("/");
       } else {
-        setError("No token returned from server");
+        setError("Invalid response from server");
       }
     } catch (err: any) {
       setError(
         err.response?.data?.detail ||
-        "Login failed. Please check your credentials."
+          "Login failed. Please check your credentials."
       );
       console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -59,14 +59,21 @@ export default function Login() {
         className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full"
         noValidate
       >
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          Login
+        </h1>
 
         {error && (
-          <div className="mb-4 text-red-600 text-center font-semibold">{error}</div>
+          <div className="mb-4 text-red-600 text-center font-semibold">
+            {error}
+          </div>
         )}
 
         <div className="mb-4">
-          <label htmlFor="username" className="block mb-1 font-medium text-gray-700">
+          <label
+            htmlFor="username"
+            className="block mb-1 font-medium text-gray-700"
+          >
             Username
           </label>
           <input
@@ -121,7 +128,9 @@ export default function Login() {
           type="submit"
           disabled={loading}
           className={`w-full py-2 text-white font-semibold rounded ${
-            loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
           } transition-colors duration-200`}
         >
           {loading ? "Logging in..." : "Login"}

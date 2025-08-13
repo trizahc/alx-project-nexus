@@ -10,7 +10,7 @@ export interface Product {
   price: number | string;
   stock: number;
   image?: string | null;
-  category?: string | Category | null;
+  category?: Category | null; // Only Category, remove string
   seller?: number | string;
   colors?: string[] | null;
   sizes?: string[] | null;

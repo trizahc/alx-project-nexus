@@ -1,6 +1,6 @@
 // components/ProductGridWithSidebar.tsx
 import { useEffect, useMemo, useState } from "react";
-import ProductCard from "./common/ProductCard";
+import ProductCard from "./Product/ProductCard";
 import FilterPanel from "./common/FilterPanel";
 import SortDropdown from "./common/SortDropdown";
 import SearchBar from "./common/SearchBar";
@@ -17,7 +17,6 @@ export default function ProductGridWithSidebar() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [priceRange, setPriceRange] = useState<[number | null, number | null]>([null, null]);
-
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function ProductGridWithSidebar() {
       try {
         setLoading(true);
         const [pRes, cRes] = await Promise.all([api.get("/products/"), api.get("/categories/")]);
-        // adapt to paginated responses
         const pData = Array.isArray(pRes.data) ? pRes.data : pRes.data?.results ?? [];
         setProducts(pData);
         const cData = Array.isArray(cRes.data) ? cRes.data : cRes.data?.results ?? [];
@@ -42,20 +40,19 @@ export default function ProductGridWithSidebar() {
   const filtered = useMemo(() => {
     let list = products.slice();
 
-    // category filter (category might be object)
+    // category filter
     if (categoryId !== null) {
-      list = list.filter((p) => {
-        const cat = p.category;
-        if (!cat) return false;
-        if (typeof cat === "string") return false;
-        return Number(cat.id) === Number(categoryId);
-      });
+      list = list.filter((p) => p.category?.id === categoryId);
     }
 
     // search
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter((p) => (p.name || "").toLowerCase().includes(q) || (p.description || "").toLowerCase().includes(q));
+      list = list.filter(
+        (p) =>
+          (p.name || "").toLowerCase().includes(q) ||
+          (p.description || "").toLowerCase().includes(q)
+      );
     }
 
     // price range
@@ -68,7 +65,9 @@ export default function ProductGridWithSidebar() {
     });
 
     // sort
-    list.sort((a, b) => (sortOrder === "asc" ? Number(a.price) - Number(b.price) : Number(b.price) - Number(a.price)));
+    list.sort((a, b) =>
+      sortOrder === "asc" ? Number(a.price) - Number(b.price) : Number(b.price) - Number(a.price)
+    );
 
     return list;
   }, [products, categoryId, search, priceRange, sortOrder]);
@@ -84,9 +83,9 @@ export default function ProductGridWithSidebar() {
             <FilterPanel
               categories={categories}
               selectedCategory={categoryId}
-              onCategoryChange={(id) => setCategoryId(id)}
+              onCategoryChange={setCategoryId}
               priceRange={priceRange}
-              onPriceChange={(r) => setPriceRange(r)}
+              onPriceChange={setPriceRange}
             />
           </div>
         </div>
@@ -103,7 +102,14 @@ export default function ProductGridWithSidebar() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard
+                key={p.id}
+                product={{
+                  ...p,
+                  description: p.description ?? "",
+                  id: Number(p.id),
+                }}
+              />
             ))}
           </div>
         )}

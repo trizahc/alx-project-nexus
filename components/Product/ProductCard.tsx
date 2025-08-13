@@ -2,18 +2,42 @@
 import Link from "next/link";
 import React from "react";
 import AddToCartButton from "../common/AddToCartButton";
+import { Product } from "@/types/Product";
 
-export default function ProductCard({ product }: { product: any }) {
+interface ProductCardProps {
+  product: Product;
+}
+
+export default function ProductCard({ product }: ProductCardProps) {
+  // Safely convert price to number, fallback to 0
+  const price = product.price ? Number(product.price) : 0;
+
   return (
-    <div style={{ border: "1px solid #eee", padding: 12 }}>
-      <h3>{product.name}</h3>
-      <p>{product.description}</p>
-      <p>Price: {product.price}</p>
-      <div style={{ display: "flex", gap: 8 }}>
+    <div className="border p-4 rounded shadow-sm">
+      {product.image && (
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-48 object-cover mb-2 rounded"
+        />
+      )}
+      <h3 className="text-lg font-bold">{product.name}</h3>
+      <p className="text-gray-600 mb-2">{product.description ?? ""}</p>
+      <p className="font-semibold mb-2">Ksh {price.toFixed(2)}</p>
+      <div className="flex gap-2">
         <Link href={`/products/${product.id}`}>
-          <button>View</button>
+          <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+            View
+          </button>
         </Link>
-        <AddToCartButton product={product} />
+        <AddToCartButton
+          product={{
+            ...product,
+            id: Number(product.id),
+            description: product.description ?? "",
+            price, // ensure AddToCartButton gets a number
+          }}
+        />
       </div>
     </div>
   );
