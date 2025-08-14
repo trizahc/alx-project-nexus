@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/router";
-import { useAuth } from "@/hooks/userAuthContext"; // ✅ Correct import
+import useAuth from "@/hooks/userAuth"; // ✅ direct hook import
 
 export default function Login() {
-  const { login } = useAuth(); // ✅ Correct hook call from context
+  const { login, error: authError } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,26 +26,10 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login/`,
-        { username, password }
-      );
-
-      const token = res.data.token || res.data.access;
-      const user = res.data.user;
-
-      if (token && user) {
-        login(user, token); // ✅ Saves to context + localStorage
-        router.push("/");
-      } else {
-        setError("Invalid response from server");
-      }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.detail ||
-          "Login failed. Please check your credentials."
-      );
-      console.error(err);
+      await login(username, password); // ✅ use hook method
+      router.push("/"); // ✅ redirect after success
+    } catch {
+      setError(authError || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -63,17 +46,14 @@ export default function Login() {
           Login
         </h1>
 
-        {error && (
+        {(error || authError) && (
           <div className="mb-4 text-red-600 text-center font-semibold">
-            {error}
+            {error || authError}
           </div>
         )}
 
         <div className="mb-4">
-          <label
-            htmlFor="username"
-            className="block mb-1 font-medium text-gray-700"
-          >
+          <label htmlFor="username" className="block mb-1 font-medium text-gray-700">
             Username
           </label>
           <input
@@ -89,10 +69,7 @@ export default function Login() {
         </div>
 
         <div className="mb-6 relative">
-          <label
-            htmlFor="password"
-            className="block mb-1 font-medium text-gray-700"
-          >
+          <label htmlFor="password" className="block mb-1 font-medium text-gray-700">
             Password
           </label>
           <input

@@ -1,6 +1,6 @@
 // store/slices/cartSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Product } from "@/types/Product"; // ✅ Import from a proper types file
+import { Product } from "@/types/Product";
 
 interface CartItem extends Product {
   quantity: number;
@@ -10,8 +10,23 @@ interface CartState {
   items: CartItem[];
 }
 
+// Load initial cart from localStorage
+const loadCart = (): CartItem[] => {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("cart");
+    if (stored) return JSON.parse(stored);
+  }
+  return [];
+};
+
 const initialState: CartState = {
-  items: [],
+  items: loadCart(),
+};
+
+const saveCart = (items: CartItem[]) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("cart", JSON.stringify(items));
+  }
 };
 
 const cartSlice = createSlice({
@@ -25,12 +40,15 @@ const cartSlice = createSlice({
       } else {
         state.items.push({ ...action.payload, quantity: 1 });
       }
+      saveCart(state.items); // persist
     },
     removeFromCart: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
+      saveCart(state.items); // persist
     },
     clearCart: (state) => {
       state.items = [];
+      saveCart(state.items); // persist
     },
   },
 });

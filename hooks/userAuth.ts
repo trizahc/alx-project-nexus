@@ -16,25 +16,58 @@ export default function useAuth() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadAuthData = useCallback(() => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setIsAuthenticated(false);
+  }, []);
 
-    if (token && storedUser) {
+  const verifyToken = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/me/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const userData = res.data;
+      setUser(userData);
       setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(userData));
+    } catch (err) {
+      console.warn("Token verification failed, logging out");
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  }, [logout]);
+
+  const loadAuthData = useCallback(() => {
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    if (token && storedUser) {
       setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
     } else {
       setIsAuthenticated(false);
       setUser(null);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    loadAuthData();
+    verifyToken();
     window.addEventListener("storage", loadAuthData);
     return () => window.removeEventListener("storage", loadAuthData);
-  }, [loadAuthData]);
+  }, [verifyToken, loadAuthData]);
 
   const login = async (username: string, password: string) => {
     setError(null);
@@ -44,7 +77,6 @@ export default function useAuth() {
         { username, password }
       );
 
-      // Adjust based on actual backend response
       const token = res.data.token || res.data.access;
       const userData = res.data.user || res.data;
 
@@ -61,13 +93,6 @@ export default function useAuth() {
       setError(err.response?.data?.detail || "Login failed");
       throw err;
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setIsAuthenticated(false);
   };
 
   const getToken = () => localStorage.getItem("token");

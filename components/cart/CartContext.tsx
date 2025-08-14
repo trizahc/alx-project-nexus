@@ -14,7 +14,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await API.get("/cart/");
       setItems(res.data.items || res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Error loading cart:", err);
       setItems([]);
     } finally {
       setLoading(false);
@@ -25,10 +25,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     load();
   }, []);
 
-  const reload = () => load();
-  const total = items.reduce((s: number, it: any) => s + (it.product?.price || 0) * it.quantity, 0);
+  const addToCart = async (productId: number, quantity: number = 1) => {
+    try {
+      await API.post("/cart/add/", { product_id: productId, quantity });
+      await load(); // reload from backend so Cart page matches
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+    }
+  };
 
-  return <CartContext.Provider value={{ items, loading, reload, total }}>{children}</CartContext.Provider>;
+  const reload = () => load();
+
+  const total = items.reduce(
+    (sum: number, it: any) => sum + (it.product?.price || 0) * it.quantity,
+    0
+  );
+
+  return (
+    <CartContext.Provider value={{ items, loading, reload, total, addToCart }}>
+      {children}
+    </CartContext.Provider>
+  );
 };
 
 export const useCart = () => {

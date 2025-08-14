@@ -8,6 +8,11 @@ import { Product } from "@/types/Product";
 import api from "@/lib/api";
 import Spinner from "./common/Spinner";
 
+interface Category {
+  id: number;
+  name: string;
+}
+
 export default function ProductGridWithSidebar() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,19 +22,20 @@ export default function ProductGridWithSidebar() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [priceRange, setPriceRange] = useState<[number | null, number | null]>([null, null]);
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         const [pRes, cRes] = await Promise.all([api.get("/products/"), api.get("/categories/")]);
-        const pData = Array.isArray(pRes.data) ? pRes.data : pRes.data?.results ?? [];
+        const pData: Product[] = Array.isArray(pRes.data) ? pRes.data : pRes.data?.results ?? [];
         setProducts(pData);
-        const cData = Array.isArray(cRes.data) ? cRes.data : cRes.data?.results ?? [];
+
+        const cData: Category[] = Array.isArray(cRes.data) ? cRes.data : cRes.data?.results ?? [];
         setCategories(cData);
       } catch (err) {
-        console.error(err);
+        console.error("Error loading products or categories:", err);
       } finally {
         setLoading(false);
       }
@@ -42,7 +48,9 @@ export default function ProductGridWithSidebar() {
 
     // category filter
     if (categoryId !== null) {
-      list = list.filter((p) => p.category?.id === categoryId);
+      list = list.filter(
+        (p) => typeof p.category !== "string" && p.category?.id === categoryId
+      );
     }
 
     // search
@@ -106,8 +114,9 @@ export default function ProductGridWithSidebar() {
                 key={p.id}
                 product={{
                   ...p,
-                  description: p.description ?? "",
                   id: Number(p.id),
+                  price: Number(p.price),
+                  description: p.description ?? "",
                 }}
               />
             ))}
